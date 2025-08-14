@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:6
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  app:
+    build: .
+    depends_on:
+      - mongo
+      - rabbitmq
+    env_file: .env
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/usr/src/app
+    command: sh -c "npm install && node src/server.js"
+
+volumes:
+  mongo_data:
